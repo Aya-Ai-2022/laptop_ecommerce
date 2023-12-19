@@ -168,7 +168,7 @@ Widget buildProductItem(Product product, context,
                                                     borderRadius:
                                                         const BorderRadius
                                                             .horizontal(
-                                                            right:
+                                                            left:
                                                                 Radius.circular(
                                                                     20))),
                                                 child: const Center(
@@ -201,7 +201,7 @@ Widget buildProductItem(Product product, context,
                                         padding:
                                             const EdgeInsets.only(left: 10.0),
                                         child: Text(
-                                          '\$${product.price}',
+                                          '\$${product.price.round()}',
                                           style: const TextStyle(
                                               color: Colors.black,
                                               fontSize: 15),
