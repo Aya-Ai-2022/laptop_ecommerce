@@ -1,5 +1,5 @@
 // ignore_for_file: library_private_types_in_public_api
-
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:first_task_1/core/controllers/favorite_cubit/favorite_cubit.dart';
 import 'package:first_task_1/core/controllers/favorite_cubit/favorite_states.dart';
 import 'package:first_task_1/core/controllers/products_controller/product_cubit.dart';
@@ -33,9 +33,7 @@ class _ProductScreenState extends State<ProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text(_currentIndex == 0 ? 'Products' : _screens_names[_currentIndex-1]),
-      // ),
+   
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -67,6 +65,7 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 }
 
+
 class ProductScreenBody extends StatelessWidget {
   final String title;
 
@@ -81,7 +80,14 @@ class ProductScreenBody extends StatelessWidget {
         if (cubit.laptopsModel == null) {
           return const Center(child: CircularProgressIndicator());
         }
+        List<dynamic> newProducts = cubit.laptopsModel!.product!
+            .where((product) => product.status == 'New')
+            .toList();
 
+        // Filter products with status == 'Used'
+        List<dynamic> usedProducts = cubit.laptopsModel!.product!
+            .where((product) => product.status == 'Used')
+            .toList();
         return BlocConsumer<FavoritesCubit, FavoritesStates>(
           listener: (context, favoritesState) {
             if (favoritesState is ErrorAddToFavorites) {
@@ -97,37 +103,102 @@ class ProductScreenBody extends StatelessWidget {
           },
           builder: (context, favoritesState) {
             // Build the UI based on the state of both ProductCubit and FavoritesCubit
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Container(
-                    color: Colors.transparent,
-                    child: GridView.count(
-                      childAspectRatio: 1 / 1.3,
-                      mainAxisSpacing: 1.0,
-                      crossAxisSpacing: 1.0,
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      crossAxisCount: 2,
-                      children: List.generate(
-                        cubit.laptopsModel!.product!.length,
-                        (index) => buildProductItem(
-                          cubit.laptopsModel!.product![index],
-                          context,
-                          onTap: () {
-                            navigateToNextScreen(
-                              context,
-                              ProductDetailsScreen(
-                                  product: cubit.laptopsModel!.product![index]),
-                            );
-                          },
+            return Scaffold(
+              backgroundColor: const Color.fromARGB(246, 240, 238, 241),
+              appBar: AppBar(
+                title: const Text('All Products'),
+              ),
+              body: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      // Carousel for New Products
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Chip(
+                          label: const Text(
+                            "New Offers",
+                            style: TextStyle(
+                              fontFamily: 'NeusaNextStd',
+                              color: Color.fromARGB(230, 84, 52, 105),
+                            ),
+                          ),
+                          backgroundColor: metal,
                         ),
                       ),
-                    ),
+                      SizedBox(
+                        child: CarouselSlider(
+                          items: newProducts
+                              .map((product) => buildProductItem(
+                                    product,
+                                    context,
+                                    onTap: () {
+                                      navigateToNextScreen(
+                                        context,
+                                        ProductDetailsScreen(product: product),
+                                      );
+                                    },
+                                  ))
+                              .toList(),
+                          options: CarouselOptions(
+    
+                            height: MediaQuery.of(context).size.height * 0.3,
+                            enlargeCenterPage: true,
+                            autoPlay: true,
+                            aspectRatio: 16 / 9,
+                            autoPlayCurve: Curves.fastOutSlowIn,
+                            enableInfiniteScroll: true,
+                            autoPlayAnimationDuration:
+                                const Duration(milliseconds: 700),
+                            viewportFraction: 0.8,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Chip(
+                          label: const Text(
+                            "Used Products",
+                            style: TextStyle(
+                              fontFamily: 'NeusaNextStd',
+                              color: Color.fromARGB(146, 84, 52, 105),
+                            ),
+                          ),
+                          backgroundColor: metal,
+                        ),
+                      ),
+
+                      Container(
+                        color: Colors.transparent,
+                        child: GridView.count(
+                          childAspectRatio: 1 / 1.3,
+                          mainAxisSpacing: 1.0,
+                          crossAxisSpacing: 1.0,
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          crossAxisCount: 2,
+                          children: List.generate(
+                            usedProducts.length,
+                            (index) => buildProductItem(
+                              usedProducts[index],
+                              context,
+                              onTap: () {
+                                navigateToNextScreen(
+                                  context,
+                                  ProductDetailsScreen(
+                                      product: usedProducts[index]),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             );
           },
@@ -136,3 +207,4 @@ class ProductScreenBody extends StatelessWidget {
     );
   }
 }
+
