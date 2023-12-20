@@ -2,8 +2,12 @@ class LaptopsModel {
   String? status;
   String? message;
   List<Product>? product;
+  List<Product>? newProducts;
+  List<Product>? usedProducts;
 
-  LaptopsModel({this.status, this.message, this.product});
+  LaptopsModel({this.status, this.message, this.product}) {
+    categorizeProductsByStatus();
+  }
 
   LaptopsModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -13,9 +17,41 @@ class LaptopsModel {
       json['product'].forEach((v) {
         product!.add(Product.fromJson(v));
       });
+      categorizeProductsByStatus();
     }
   }
+
+  void categorizeProductsByStatus() {
+    newProducts = [];
+    usedProducts = [];
+
+    product?.forEach((product) {
+      if (product.status == "New") {
+        newProducts?.add(product);
+      } else if (product.status == "Used") {
+        usedProducts?.add(product);
+      }
+    });
+  }
 }
+
+
+//   Map<String, List<Product>> categorizeProductsByStatus() {
+//     Map<String, List<Product>> categorizedProducts = {};
+    
+//     product?.forEach((product) {
+//       String productStatus = product.status ?? "Unknown";
+      
+//       if (!categorizedProducts.containsKey(productStatus)) {
+//         categorizedProducts[productStatus] = [];
+//       }
+
+//       categorizedProducts[productStatus]?.add(product);
+//     });
+
+//     return categorizedProducts;
+//   }
+// }
 
 class Product {
   String? sId;
@@ -56,7 +92,7 @@ class Product {
     images = json['images'].cast<String>();
     countInStock = json['countInStock'];
     iV = json['__v'];
-    // isFavorite = json['isFavorite'] ?? false;
     isFavorite = json['isFavorite'];
   }
 }
+
