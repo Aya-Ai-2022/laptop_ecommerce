@@ -66,10 +66,9 @@ class _ProductScreenState extends State<ProductScreen> {
 }
 
 
-class ProductScreenBody extends StatelessWidget {
-  final String title;
 
-  const ProductScreenBody({Key? key, required this.title}) : super(key: key);
+class ProductScreenBody extends StatelessWidget {
+  const ProductScreenBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -80,29 +79,15 @@ class ProductScreenBody extends StatelessWidget {
         if (cubit.laptopsModel == null) {
           return const Center(child: CircularProgressIndicator());
         }
-        List<dynamic> newProducts = cubit.laptopsModel!.product!
-            .where((product) => product.status == 'New')
-            .toList();
 
-        // Filter products with status == 'Used'
-        List<dynamic> usedProducts = cubit.laptopsModel!.product!
-            .where((product) => product.status == 'Used')
-            .toList();
+        List<Product>? newProducts = cubit.laptopsModel?.newProducts;
+        List<Product>? usedProducts = cubit.laptopsModel?.usedProducts;
+
         return BlocConsumer<FavoritesCubit, FavoritesStates>(
           listener: (context, favoritesState) {
-            if (favoritesState is ErrorAddToFavorites) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Error adding to favorites')),
-              );
-            } else if (favoritesState is ErrorRemoveFromFavorites) {
-              // Handle error
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Error removing from favorites')),
-              );
-            }
+           
           },
           builder: (context, favoritesState) {
-            // Build the UI based on the state of both ProductCubit and FavoritesCubit
             return Scaffold(
               backgroundColor: const Color.fromARGB(246, 240, 238, 241),
               appBar: AppBar(
@@ -115,62 +100,64 @@ class ProductScreenBody extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      // Carousel for New Products
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Chip(
-                          label: const Text(
-                            "New Offers",
-                            style: TextStyle(
-                              fontFamily: 'NeusaNextStd',
-                              color: Color.fromARGB(230, 84, 52, 105),
+                      if (newProducts != null && newProducts.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Chip(
+                            label: const Text(
+                              "New Offers",
+                              style: TextStyle(
+                                fontFamily: 'NeusaNextStd',
+                                color: Color.fromARGB(230, 84, 52, 105),
+                              ),
+                            ),
+                            backgroundColor: metal,
+                          ),
+                        ),
+                      if (newProducts != null && newProducts.isNotEmpty)
+                        SizedBox(
+                          child: CarouselSlider(
+                            items: newProducts
+                                    .map((product) => buildProductItem(
+                                          product,
+                                          context,
+                                          onTap: () {
+                                            navigateToNextScreen(
+                                              context,
+                                              ProductDetailsScreen(
+                                                  product: product),
+                                            );
+                                          },
+                                        ))
+                                    .toList()
+                                ,
+                            options: CarouselOptions(
+                              height: MediaQuery.of(context).size.height * 0.3,
+                              enlargeCenterPage: true,
+                              autoPlay: true,
+                              aspectRatio: 16 / 9,
+                              autoPlayCurve: Curves.fastOutSlowIn,
+                              enableInfiniteScroll: true,
+                              autoPlayAnimationDuration:
+                                  const Duration(milliseconds: 700),
+                              viewportFraction: 0.8,
                             ),
                           ),
-                          backgroundColor: metal,
                         ),
-                      ),
-                      SizedBox(
-                        child: CarouselSlider(
-                          items: newProducts
-                              .map((product) => buildProductItem(
-                                    product,
-                                    context,
-                                    onTap: () {
-                                      navigateToNextScreen(
-                                        context,
-                                        ProductDetailsScreen(product: product),
-                                      );
-                                    },
-                                  ))
-                              .toList(),
-                          options: CarouselOptions(
-    
-                            height: MediaQuery.of(context).size.height * 0.3,
-                            enlargeCenterPage: true,
-                            autoPlay: true,
-                            aspectRatio: 16 / 9,
-                            autoPlayCurve: Curves.fastOutSlowIn,
-                            enableInfiniteScroll: true,
-                            autoPlayAnimationDuration:
-                                const Duration(milliseconds: 700),
-                            viewportFraction: 0.8,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Chip(
-                          label: const Text(
-                            "Used Products",
-                            style: TextStyle(
-                              fontFamily: 'NeusaNextStd',
-                              color: Color.fromARGB(146, 84, 52, 105),
+                      if (usedProducts != null && usedProducts.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Chip(
+                            label: const Text(
+                              "Used Products",
+                              style: TextStyle(
+                                fontFamily: 'NeusaNextStd',
+                                color: Color.fromARGB(146, 84, 52, 105),
+                              ),
                             ),
+                            backgroundColor: metal,
                           ),
-                          backgroundColor: metal,
                         ),
-                      ),
-
                       Container(
                         color: Colors.transparent,
                         child: GridView.count(
@@ -181,15 +168,16 @@ class ProductScreenBody extends StatelessWidget {
                           shrinkWrap: true,
                           crossAxisCount: 2,
                           children: List.generate(
-                            usedProducts.length,
+                            usedProducts?.length ?? 0,
                             (index) => buildProductItem(
-                              usedProducts[index],
+                              usedProducts![index], // Non-null assertion, adjust if needed
                               context,
                               onTap: () {
                                 navigateToNextScreen(
                                   context,
                                   ProductDetailsScreen(
-                                      product: usedProducts[index]),
+                                    product: usedProducts[index],
+                                  ),
                                 );
                               },
                             ),
@@ -207,4 +195,5 @@ class ProductScreenBody extends StatelessWidget {
     );
   }
 }
+
 
